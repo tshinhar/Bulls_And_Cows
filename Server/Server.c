@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 		return STATUS_CODE_FAILURE;
 	}
 
-	// init variables
+	// initial variables
 	ClientIndex = 0;
 	TotalPlayersHistory = 0;
 	NumOfActivePlayers = 0;
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	}
 
 	scores_array = (PlayerScores*)malloc(sizeof(PlayerScores));
-	if (NULL == scores_array) {
+	if (check_malloc(scores_array) == EXIT_FAILURE) {
 		goto Main_Cleanup_Mutex;
 	}
 
@@ -165,8 +165,7 @@ int ExtraceParams(char* str, char** dst) {
 	dst_length = (int)strlen(colon_ptr);
 	colon_ptr[dst_length - 1] = '\0';		// delete \n in the end
 	*dst = (char*)malloc(dst_length * sizeof(char));
-	if (*dst == NULL) {
-		printf("Can't allocate memory\n");
+	if (check_malloc(*dst) == EXIT_FAILURE){
 		return STATUS_CODE_FAILURE;
 	}
 	strcpy_s(*dst, dst_length, colon_ptr);
@@ -182,8 +181,7 @@ int CreateResultsMessage(Player player, Player other_player, char** send_buffer)
 	int winner;
 	send_buffer_length = sizeof(SERVER_GAME_RESULTS) + 2 * USERNAME_MAX_LENGTH + 2 * MOVE_MAX_LENGTH + 1;
 	*send_buffer = (char*)malloc(send_buffer_length * sizeof(char));
-	if (*send_buffer == NULL) {
-		printf("Can't allocate memory\n");
+	if (check_malloc(*send_buffer) == EXIT_FAILURE) {
 		return STATUS_CODE_FAILURE;
 	}
 	strcpy_s(*send_buffer, send_buffer_length, SERVER_GAME_RESULTS);
@@ -297,7 +295,7 @@ int SendScoreBoard(SOCKET socket) {
 	fseek(file_ptr, 0, SEEK_SET);
 
 	leader_board_content = (char*)malloc(sizeof(char) * file_size);
-	if (leader_board_content == NULL) {
+	if (check_malloc(leader_board_content) == EXIT_FAILURE) {
 		return STATUS_CODE_FAILURE;
 	}
 	fread(leader_board_content, sizeof(char), file_size, file_ptr);
@@ -305,7 +303,7 @@ int SendScoreBoard(SOCKET socket) {
 
 	messege_size = file_size + sizeof(SERVER_LEADERBOARD) + 1;
 	message = (char*)malloc(sizeof(char) * messege_size);
-	if (message == NULL) {
+	if (check_malloc(message) == EXIT_FAILURE) {
 		free(leader_board_content);
 		return STATUS_CODE_FAILURE;
 	}
@@ -540,8 +538,7 @@ int UpdateScoreBoard(Player* player, int is_win) {
 
 	// make array of ratios in descending order
 	float* players_ratio_order = (float*)malloc(TotalPlayersHistory * sizeof(float));
-	if (NULL == players_ratio_order) {
-		printf("Unable allocate memory.\n");
+	if (check_malloc(players_ratio_order) == EXIT_FAILURE) {
 		ReleaseMutex(TotalPlayersHistoryMutex);
 		return STATUS_CODE_FAILURE;
 	}

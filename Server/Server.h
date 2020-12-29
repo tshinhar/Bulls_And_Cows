@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <Utilities.h>
+
 typedef enum { TRNS_FAILED, TRNS_DISCONNECTED, TRNS_SUCCEEDED } TransferResult_t;
 
 #define STATUS_CODE_FAILURE -1
