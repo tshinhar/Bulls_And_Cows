@@ -16,4 +16,4 @@ TransferResult_t ReceiveBuffer(char* OutputBuffer, int RemainingBytesToReceive, 
 
 TransferResult_t ReceiveString(char** OutputStrPtr, SOCKET sd);
 
-#endif // SOCKET_TOOLS_H
+#endif // SOCKETTOOLS_H

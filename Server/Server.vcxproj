@@ -30,7 +30,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -72,6 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)\..\Share;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -139,9 +140,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Share\SocketShared.h" />
+    <ClInclude Include="..\Share\SocketTools.h" />
+    <ClInclude Include="..\Share\Utilities.h" />
+    <ClInclude Include="Connection.h" />
+    <ClInclude Include="Messages.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Server.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Share\SocketTools.c" />
+    <ClCompile Include="..\Share\Utilities.c" />
+    <ClCompile Include="Connection.c" />
+    <ClCompile Include="Player.c" />
     <ClCompile Include="Server.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
