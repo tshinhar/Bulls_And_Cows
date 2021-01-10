@@ -13,14 +13,47 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Share">
+      <UniqueIdentifier>{4cb4f30a-bc21-4f37-88c7-883365a3c067}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Server.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Share\SocketShared.h">
+      <Filter>Share</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Share\SocketTools.h">
+      <Filter>Share</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Share\Utilities.h">
+      <Filter>Share</Filter>
+    </ClInclude>
+    <ClInclude Include="Connection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Messages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Server.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Share\SocketTools.c">
+      <Filter>Share</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Share\Utilities.c">
+      <Filter>Share</Filter>
+    </ClCompile>
+    <ClCompile Include="Connection.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
