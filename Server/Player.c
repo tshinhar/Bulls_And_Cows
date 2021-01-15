@@ -94,7 +94,7 @@ int PlayerSetup(Player* player, char* num_str) {
 
 
 //calculates the number of bulls in the guess
-int GetNumOfBulls(int *num, int *guess[]) {
+int GetNumOfBulls(int *num, int *guess) {
 	int bulls_counter = 0;
 	for (int i = 0; i < 4; i++){
 		if (num[i] == guess[i])
