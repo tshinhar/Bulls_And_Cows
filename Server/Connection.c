@@ -1,3 +1,9 @@
+//Authors – Tomer Shinhar 205627524 Yael schwartz 206335010
+//Project – Server
+
+//Description - this modul contains all the functions for running the server 
+//and reciving messages from the clients
+
 #include "Connection.h"
 
 
@@ -43,8 +49,7 @@ int InitServerSocket(SOCKET* server_socket, int port_num) {
 	}
 	// Create a socket 
 	*server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (*server_socket == INVALID_SOCKET)
-	{
+	if (*server_socket == INVALID_SOCKET){
 		printf("Error at socket( ): %ld\n", WSAGetLastError());
 		DeinitializeSocket(NULL);
 		return STATUS_CODE_FAILURE;
@@ -52,8 +57,7 @@ int InitServerSocket(SOCKET* server_socket, int port_num) {
 
 
 	address = inet_addr(SERVER_ADDRESS);
-	if (address == INADDR_NONE)
-	{
+	if (address == INADDR_NONE){
 		printf("The string \"%s\" cannot be converted into an ip address. ending program.\n",
 			SERVER_ADDRESS);
 		DeinitializeSocket(server_socket);
@@ -66,8 +70,7 @@ int InitServerSocket(SOCKET* server_socket, int port_num) {
 
 	//bind
 	status = bind(*server_socket, (SOCKADDR*)&service, sizeof(service));
-	if (status == SOCKET_ERROR)
-	{
+	if (status == SOCKET_ERROR){
 		printf("bind( ) failed with error %ld. Ending program\n", WSAGetLastError());
 		DeinitializeSocket(server_socket);
 		return STATUS_CODE_FAILURE;
@@ -84,6 +87,7 @@ int InitServerSocket(SOCKET* server_socket, int port_num) {
 }
 
 
+//closes the server socket
 int DeinitializeSocket(SOCKET* socket) {
 	int result;
 
@@ -156,7 +160,8 @@ DWORD RecvDataThread(int player_index) {
 					goto Cleanup_1;
 				}
 				// update player guess
-				player->guess = atoi(recv_buffer);
+				player->guess = atoi(params);
+				printf("recived player guess %d\n", player->guess);
 				if (STATUS_CODE_FAILURE == PlayMoveVesus(player, other_player)) {
 					an_error_occured = TRUE;
 					goto Cleanup_1;
@@ -178,8 +183,14 @@ DWORD RecvDataThread(int player_index) {
 	}
 Cleanup_1:
 	free(recv_buffer);
-	if (STATUS_CODE_FAILURE == PlayerDisconnect(player))
+	if (STATUS_CODE_FAILURE == PlayerDisconnect(player)) {
 		an_error_occured = TRUE;
+		printf("Error disconnecting player\n");
+	}
+	if (IsFileExist(GAME_SESSION_FILE_NAME)) {	// remove file if it exists as player disconected
+		RemoveGameSessionFile();
+	}
+	printf("player disconnected\n");
 	if (an_error_occured) {
 		return STATUS_CODE_FAILURE;
 	}
@@ -225,7 +236,7 @@ DWORD WaitForConnection(LPVOID lpParam) {
 			char* recv_buffer = NULL;
 			recv_res = ReceiveString(&recv_buffer, refusal_socket);// because client should send CLIENT_REQUEST also in this situation
 			if (recv_res != TRNS_SUCCEEDED) {
-				printf("erro while recieved from socket.\n");
+				printf("Error reciving message\n");
 				an_error_occured = TRUE;
 				goto Cleanup_2;
 			}
@@ -241,7 +252,6 @@ DWORD WaitForConnection(LPVOID lpParam) {
 				an_error_occured = TRUE;
 				goto Cleanup_2;
 			}
-
 			// check which player slot is availble
 			if (Players[0].valid == 0)
 				ClientIndex = 0;
@@ -281,11 +291,11 @@ Cleanup_1:
 
 
 
-//Wait for 'exit' to be written on the server command line
+//thread that waits for 'exit' to be written on the server command line
 DWORD ExitInteruptThread(LPVOID lpParam) {
 	char str[5];
 	scanf_s("%s", str, 5);
-	if (str[4] == '\0') {
+	if (str[4] == '\0') {// since the input is string this is always true, but just in case
 		while (strcmp(str, "exit") != 0) {
 			scanf_s("%s", str, 5);
 			printf("%s\n", str);

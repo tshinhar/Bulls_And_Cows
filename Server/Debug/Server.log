@@ -1,2 +1,5 @@
 ﻿  Player.c
+C:\Users\tshin\source\repos\EX4\Server\Player.c(100,25): warning C4047: '==': 'int' differs in levels of indirection from 'int *'
+C:\Users\tshin\source\repos\EX4\Server\Player.c(162,54): warning C4047: 'function': 'int **' differs in levels of indirection from 'int [4]'
+C:\Users\tshin\source\repos\EX4\Server\Player.c(162,44): warning C4024: 'GetNumOfBulls': different types for formal and actual parameter 2
   Server.vcxproj -> C:\Users\tshin\source\repos\EX4\Debug\Server.exe
