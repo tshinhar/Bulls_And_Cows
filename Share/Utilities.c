@@ -66,9 +66,8 @@ int check_realloc(const void* pointer)
 
 
 int* num_to_arry(int num, int* arry) {
-	for (int i = 3; i >= 0; i--)
-	{
-		arry[i] = num % (10 * i);
+	for (int i = 0; i < 4; i++){
+		arry[i] = num % (10);
 		num = num / 10;
 	}
 	return arry;

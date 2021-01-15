@@ -30,10 +30,12 @@ typedef struct {
 	SOCKET player_socket;
 	HANDLE turn_finished; // event that set when this player made a guess
 	int versus; // flag if the player wants to play vs another player
+	HANDLE calc_finished;// event that set when this player calculated round results
 	HANDLE versus_chose; // event that the player chose to play vs another player
 	int chosen_num; //the 4 digit number the player chose at setup
 	int guess; // the guess of the oponent's number
 	BOOL lost; // is the player lost the game
+	int wrote_to_file;
 	int valid; // flag if the player is active or not
 } Player;
 
