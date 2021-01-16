@@ -187,6 +187,12 @@ Cleanup_1:
 		an_error_occured = TRUE;
 		printf("Error disconnecting player\n");
 	}
+	if (other_player->chosen_num != 0) {//notify other player oponent disconected if it is in a middle of a game
+		if (SendString(SERVER_OPPONENT_QUIT, other_player->player_socket) == TRNS_FAILED) {
+			printf("Socket error when trying to send data\n");
+			return STATUS_CODE_FAILURE;
+		}
+	}
 	if (IsFileExist(GAME_SESSION_FILE_NAME)) {	// remove file if it exists as player disconected
 		RemoveGameSessionFile();
 	}
