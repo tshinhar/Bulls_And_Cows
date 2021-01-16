@@ -117,6 +117,7 @@ DWORD RecvDataThread(int player_index) {
 	BOOL an_error_occured = FALSE;
 	char* recv_buffer = NULL;
 	BOOL game_session_created = FALSE;
+	BOOL disconnect_midgame = FALSE;
 
 	while (TRUE) {
 		// ReceiveBuffer contain call for recv that is blocking function
@@ -139,11 +140,13 @@ DWORD RecvDataThread(int player_index) {
 			else if (str_prefix(recv_buffer, CLIENT_SETUP)) {
 				if (ExtraceParams(recv_buffer, &params) == STATUS_CODE_FAILURE) {
 					an_error_occured = TRUE;
+					disconnect_midgame = TRUE;
 					goto Cleanup_1;
 				}
 				if (STATUS_CODE_FAILURE == PlayerSetup(player, params)) {
 					free(params);
 					an_error_occured = TRUE;
+					disconnect_midgame = TRUE;
 					goto Cleanup_1;
 				}
 				free(params);
@@ -151,12 +154,14 @@ DWORD RecvDataThread(int player_index) {
 			else if (str_prefix(recv_buffer, CLIENT_VERSUS)) {
 				if (STATUS_CODE_FAILURE == PlayVersus(player, other_player, &game_session_created)) {
 					an_error_occured = TRUE;
+					disconnect_midgame = TRUE;
 					goto Cleanup_1;
 				}
 			}
 			else if (str_prefix(recv_buffer, CLIENT_PLAYER_MOVE)) {
 				if (ExtraceParams(recv_buffer, &params) == STATUS_CODE_FAILURE) {
 					an_error_occured = TRUE;
+					disconnect_midgame = TRUE;
 					goto Cleanup_1;
 				}
 				// update player guess
@@ -164,6 +169,7 @@ DWORD RecvDataThread(int player_index) {
 				printf("recived player guess %d\n", player->guess);
 				if (STATUS_CODE_FAILURE == PlayMoveVesus(player, other_player)) {
 					an_error_occured = TRUE;
+					disconnect_midgame = TRUE;
 					goto Cleanup_1;
 				}
 			}
@@ -187,8 +193,12 @@ Cleanup_1:
 		an_error_occured = TRUE;
 		printf("Error disconnecting player\n");
 	}
-	if (other_player->chosen_num != 0) {//notify other player oponent disconected if it is in a middle of a game
+	if (disconnect_midgame == TRUE) {//notify other player oponent disconected if it is in a middle of a game
 		if (SendString(SERVER_OPPONENT_QUIT, other_player->player_socket) == TRNS_FAILED) {
+			printf("Socket error when trying to send data\n");
+			return STATUS_CODE_FAILURE;
+		}
+		if (SendString(SERVER_MAIN_MENU, other_player->player_socket) == TRNS_FAILED) {
 			printf("Socket error when trying to send data\n");
 			return STATUS_CODE_FAILURE;
 		}

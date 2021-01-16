@@ -6,7 +6,7 @@ extern HANDLE TimeOut_connectionProblem_GoOut_Semphore, SERVER_MAIN_MENU_Semphor
 SERVER_APROVED_Semphore, SERVER_INVITE_Semphore,
 SERVER_SETUP_REUEST_Semphore, SERVER_PLAYER_MOVE_REQUEST_Semphore,
 SERVER_GAME_RESULTS_Semphore, SERVER_WIN_Semphore,
-SERVER_DRAW_Semphore, QUIT_OPPONENT_SERVER_semaphore;
+SERVER_DRAW_Semphore, SERVER_OPPONENT_QUIT_semaphore;
 
 extern int TimeTogoOut, ServerOpponentsQuit, ServerNoOpponemts;
 extern int game_next_step;

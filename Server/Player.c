@@ -42,7 +42,8 @@ int PlayerDisconnect(Player* player) {
 		printf("Couldn't releasr NumOfActivePlayersMutex - %d\n", GetLastError());
 		an_error_occured = TRUE;
 	}
-	CloseHandle(player->turn_finished);
+	if(player->turn_finished != NULL)//in case it was closed before
+		CloseHandle(player->turn_finished);
 	if (an_error_occured)
 		return STATUS_CODE_FAILURE;
 	return STATUS_CODE_SUCCESS;
@@ -214,7 +215,7 @@ int SendResults(Player* player, Player* other_player) {
 			return STATUS_CODE_FAILURE;
 		}
 	}
-	if (main_menu) {// game is over, send main menu and reset the game
+	if (main_menu) {// game is over, send main menu
 		printf("returning to main menu\n");
 		if (!IsFileExist(GAME_SESSION_FILE_NAME))
 			RemoveGameSessionFile();
@@ -376,6 +377,7 @@ int PlayVersus(Player* player, Player* other_player, BOOL* create_game_session) 
 		return STATUS_CODE_FAILURE;
 	}
 	if (WAIT_TIMEOUT == wait_res || other_player->valid == 0) { // the other player won't play
+		printf("no opponent found\n");
 		if (SendString(SERVER_NO_OPPONENTS, player->player_socket) == TRNS_FAILED){
 			printf("Socket error trying to send data\n");
 			return STATUS_CODE_FAILURE;

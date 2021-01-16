@@ -7,13 +7,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{BC61D9D8-147E-449D-94DD-D66DBE1E9FD4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Share", "Share", "{DBC24E61-D4EB-4F4F-9D46-E6B9881B71A1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Share", "Share", "{4EB8C64F-F9B9-437C-A7EC-79F17E2AB063}"
 	ProjectSection(SolutionItems) = preProject
-		SocketShared.h = SocketShared.h
-		SocketTools.c = SocketTools.c
-		SocketTools.h = SocketTools.h
-		Utilities.c = Utilities.c
-		Utilities.h = Utilities.h
+		Share\SocketShared.h = Share\SocketShared.h
+		Share\SocketTools.c = Share\SocketTools.c
+		Share\SocketTools.h = Share\SocketTools.h
+		Share\Utilities.c = Share\Utilities.c
+		Share\Utilities.h = Share\Utilities.h
 	EndProjectSection
 EndProject
 Global

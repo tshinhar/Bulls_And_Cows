@@ -37,7 +37,7 @@ HANDLE SERVER_PLAYER_MOVE_REQUEST_Semphore;
 HANDLE SERVER_GAME_RESULTS_Semphore;
 HANDLE SERVER_WIN_Semphore;
 HANDLE SERVER_DRAW_Semphore;
-HANDLE QUIT_OPPONENT_SERVER_semaphore;
+HANDLE SERVER_OPPONENT_QUIT_semaphore;
 int TimeTogoOut, ServerOpponentsQuit, ServerNoOpponemts;
 int game_next_step;
 
@@ -46,8 +46,6 @@ int Check_what_to_do_next();
 int check_if_SendReceiveString(TransferResult_t ReceiveResult);
 int str_prefix(char* str, const char* prefix);
 int Server_ReceiveString(char* ptr);
-//int Start_a_game(client* user);
-//int Game_progress(client* user);
 int Server_connection_issue(client* user);
 int Client_disconnected(char message[LONGEST_MESSAGE], SOCKET m_socket);
 int CreateAllSemphores();

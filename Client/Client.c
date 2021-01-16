@@ -46,12 +46,10 @@ int main(int argc, char** argv) {
 		if (connect(m_socket, (SOCKADDR*)&client_connection_Service, sizeof(client_connection_Service)) == SOCKET_ERROR) {
 			printf("Failed connecting to server on %s:%d\n", player.ip_address, player.port_name);
 			check = Check_what_to_do_next();
-			while (check == notValid) //******* maybe we dont need  ???????
-			{
+			while (check == notValid) {
 				check = Check_what_to_do_next();
 			}
-			if (check == endofwork)
-			{
+			if (check == endofwork) {
 				WSACleanup();
 				closesocket(m_socket);
 				closeAllHandle();
@@ -77,41 +75,34 @@ int main(int argc, char** argv) {
 			ReleaseSemaphore(TimeOut_connectionProblem_GoOut_Semphore, 1, NULL);
 		}
 		wait_result = WaitForMultipleObjects(2, hThread, TRUE, INFINITE);// wait for both of the threads to finish
-		if ((WAIT_OBJECT_0 != wait_result))
-		{
+		if ((WAIT_OBJECT_0 != wait_result)) {
 			printf("SendDataThread or ReceiveDataThread (or both) occured an issue (timeout/failed/abandoned)\n");
 		}
 
 		wait_result = WaitForSingleObject(TimeOut_connectionProblem_GoOut_Semphore, INFINITE);
-		if ((WAIT_OBJECT_0 != wait_result))
-		{
+		if ((WAIT_OBJECT_0 != wait_result)) {
 			printf("Couldn't wait for end of TimeOut_connectionProblem_GoOut_Semphore\n");
 		}
-		if (hThread[0] != 0)
-		{
+		if (hThread[0] != 0) {
 			TerminateThread(hThread[0], 0x555);//****** 1365: ERROR_BAD_LOGON_SESSION_STATE, The logon session is not in a state that is consistent with the requested operation ????????
 			CloseHandle(hThread[0]);
 		}
-		if (hThread[1] != 0)
-		{
+		if (hThread[1] != 0) {
 			TerminateThread(hThread[1], 0x555);//****** 1365: ERROR_BAD_LOGON_SESSION_STATE, The logon session is not in a state that is consistent with the requested operation ????????
 			CloseHandle(hThread[1]);
 		}
 		closesocket(m_socket);
 		WSACleanup();
-		if (TimeTogoOut)//The player wants to disconnect
-		{
+		if (TimeTogoOut) {//The player wants to disconnect
 			closeAllHandle();
 			return STATUS_CODE_SUCCESS;
 		}
 		//Timeout or connection issues
 		check = Check_what_to_do_next();
-		while (check == notValid) //******* maybe we dont need  ???????
-		{
+		while (check == notValid) {
 			check = Check_what_to_do_next();
 		}
-		if (check == endofwork)
-		{
+		if (check == endofwork) {
 			closeAllHandle();
 			return STATUS_CODE_SUCCESS;
 		}
@@ -119,14 +110,13 @@ int main(int argc, char** argv) {
 }
 
 //Sending data to the server
-static DWORD SendDataThread(LPVOID lpParam)
-{
+static DWORD SendDataThread(LPVOID lpParam) {
 	char message[LONGEST_MESSAGE], SendStr[USERNAME_MAX_LENGTH];
 	TransferResult_t SendResult;
 	DWORD wait_result;
 	client* user = (client*)lpParam;
 	int main_menu = 0;
-	HANDLE reuslt_sempahores[3];
+	HANDLE reuslt_sempahores[3], client_quit_or_invited[2];
 	strcpy_s(message, LONGEST_MESSAGE, "CLIENT_REQUEST:");
 	strcat_s(message, LONGEST_MESSAGE, user->username);
 	strcat_s(message, LONGEST_MESSAGE, "\n");
@@ -145,6 +135,9 @@ static DWORD SendDataThread(LPVOID lpParam)
 		if ((WAIT_OBJECT_0 != wait_result)) {//case 4 in the explicit user's program information (page 8)
 			return (Server_connection_issue(user));
 		}
+		printf("Choose what to do next:\n");
+		printf("1. Play against another client\n");
+		printf("2. Quit\n");
 		gets_s(SendStr, sizeof(SendStr)); //Reading a string from SERVER_MAIN_MENU: 1- Play against another client, 2- Quit
 		if (atoi(SendStr) == 1) {//Play against another client
 			//CLIENT_VERSUS
@@ -154,20 +147,12 @@ static DWORD SendDataThread(LPVOID lpParam)
 				ReleaseSemaphore(TimeOut_connectionProblem_GoOut_Semphore, 1, NULL);
 				return 0x555;
 			}
-			/*FROM THIS POINT ON WE WILL HAVE:
-			if(Start_a_game(user) == 0x555)
-			{
-				return 0x555
-			}
-			//if we got here that means that there are no opponents/the opponent quit
-			break;
-			*/
-
-			// getting response from server of SERVER_INVITE
-			printf("wating for server invite\n");
-			wait_result = WaitForSingleObject(SERVER_INVITE_Semphore, WAIT_15S);
-			if ((WAIT_OBJECT_0 != wait_result)) {//case 4 in the explicit user's program information (page 8)
-				printf("Couldn't wait for server_invite_semaphore - %d\n", GetLastError());
+			// getting response from server of SERVER_NO_OPPONENTS or SERVER_INVITE (either there is no other client or it wants to join)
+			client_quit_or_invited[0] = SERVER_OPPONENT_QUIT_semaphore;
+			client_quit_or_invited[1] = SERVER_INVITE_Semphore;
+			wait_result = WaitForMultipleObjects(2, client_quit_or_invited, FALSE, WAIT_30S);
+			if ((WAIT_OBJECT_0 + 1 != wait_result) && (WAIT_OBJECT_0 != wait_result)) {//case 4 in the explicit user's program information (page 8)
+				printf("Couldn't wait for SERVER_INVITE Semphore or SERVER_OPPONENT_QUIT semaphore - %d\n", GetLastError());
 				return (Server_connection_issue(user));
 			}
 			if (ServerNoOpponemts) {
@@ -220,11 +205,11 @@ static DWORD SendDataThread(LPVOID lpParam)
 					return 0x555;
 				}
 				//getting response from server of SERVER_GAME_RESULTS
-				wait_result = WaitForSingleObject(SERVER_GAME_RESULTS_Semphore, INFINITE); //infinite since we wait for the other player to play as well
+				wait_result = WaitForSingleObject(SERVER_GAME_RESULTS_Semphore, INFINITE);
 				if ((WAIT_OBJECT_0 != wait_result)) {//case 4 in the explicit user's program information (page 8)
 					return (Server_connection_issue(user));
 				}
-			}//AT THIS POINT Initialize_game(user) ENDS
+			}
 		}
 		else //Quit
 		{//CLIENT_DISCONNECT
@@ -239,90 +224,87 @@ static DWORD ReceiveDataThread(LPVOID lpParam)
 	TransferResult_t ReceiveResult;
 	client* user = (client*)lpParam;
 	enum server val;
-	char* ptr = NULL, * next_ptr = NULL, * bulls = NULL, * cows = NULL, * opponent_move = NULL, * opponent_name = NULL, * winner = NULL, * opponent_number = NULL;
+	char* pointer = NULL, * next_pointer = NULL, * bulls = NULL, * cows = NULL, * opponent_move = NULL, * opponent_name = NULL, * winner = NULL, * opponent_number = NULL;
 	while (1)
 	{
-		char* AcceptedStr = NULL;
-		ReceiveResult = ReceiveString(&AcceptedStr, m_socket);
+		char* RecievedStr = NULL;
+		ReceiveResult = ReceiveString(&RecievedStr, m_socket);
 		if (check_if_SendReceiveString(ReceiveResult))
 		{
 			ReleaseSemaphore(TimeOut_connectionProblem_GoOut_Semphore, 1, NULL);
 			return 0x555;
 		}
-		ptr = strtok_s(AcceptedStr, ":;", &next_ptr);
-		val = Server_ReceiveString(ptr);
+		pointer = strtok_s(RecievedStr, ":;", &next_pointer);
+		val = Server_ReceiveString(pointer);
 		switch (val) {
 		case SERVER_MAIN_MENU:
-			printf("Choose what to do next:\n");
-			printf("1. Play against another client\n");
-			printf("2. Quit\n");
 			ReleaseSemaphore(SERVER_MAIN_MENU_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			break;
 		case SERVER_APPROVED:
 			ReleaseSemaphore(SERVER_APROVED_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			break;
 		case SERVER_DENIED:
 			printf("Server on %s:%d denied the connection request.\n", user->ip_address, user->port_name);
 			ReleaseSemaphore(TimeOut_connectionProblem_GoOut_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			return 0x555;
 		case SERVER_INVITE:
 			printf("Game is on!\n");
 			ReleaseSemaphore(SERVER_INVITE_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			break;
 		case SERVER_SETUP_REQUEST:
 			printf("Choose your 4 digits:\n");
 			ReleaseSemaphore(SERVER_SETUP_REUEST_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			break;
 		case SERVER_PLAYER_MOVE_REQUEST:
 			printf("Choose your guess:\n");
 			game_next_step = SERVER_PLAYER_MOVE_REQUEST;
 			ReleaseSemaphore(SERVER_PLAYER_MOVE_REQUEST_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			break;
 		case SERVER_GAME_RESULTS:
-			bulls = strtok_s(NULL, ":;", &next_ptr);
-			cows = strtok_s(NULL, ":;", &next_ptr);
-			opponent_name = strtok_s(NULL, ":;", &next_ptr);
-			opponent_move = strtok_s(NULL, ":;", &next_ptr);
+			bulls = strtok_s(NULL, ":;", &next_pointer);
+			cows = strtok_s(NULL, ":;", &next_pointer);
+			opponent_name = strtok_s(NULL, ":;", &next_pointer);
+			opponent_move = strtok_s(NULL, ":;", &next_pointer);
 			printf("Bulls: %s\n", bulls);
 			printf("Cows: %s\n", cows);
 			printf("%s played: %s\n", opponent_name, opponent_move);
 			ReleaseSemaphore(SERVER_GAME_RESULTS_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			break;
 		case SERVER_WIN:
 			game_next_step = SERVER_WIN;
-			winner = strtok_s(NULL, ":;", &next_ptr);
-			opponent_number = strtok_s(NULL, ":;", &next_ptr);
+			winner = strtok_s(NULL, ":;", &next_pointer);
+			opponent_number = strtok_s(NULL, ":;", &next_pointer);
 			printf("%s won!\n", winner);
 			printf("opponents number was: %s!\n", opponent_number);
 			ReleaseSemaphore(SERVER_WIN_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			break;
 		case SERVER_DRAW:
 			game_next_step = SERVER_DRAW;
-			printf("It%cs a tie", '\'');
+			printf("It%cs a tie\n", '\'');
 			ReleaseSemaphore(SERVER_DRAW_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			break;
 		case SERVER_NO_OPPONENTS:
 			ServerNoOpponemts = 1;
 			ReleaseSemaphore(SERVER_INVITE_Semphore, 1, NULL);
-			free(AcceptedStr);
+			free(RecievedStr);
 			break;
 		case SERVER_OPPONENT_QUIT:
 			ServerOpponentsQuit = 1;
 			printf("Opponent quit.\n");
-			ReleaseSemaphore(QUIT_OPPONENT_SERVER_semaphore, 1, NULL);
-			free(AcceptedStr);
+			ReleaseSemaphore(SERVER_OPPONENT_QUIT_semaphore, 1, NULL);
+			free(RecievedStr);
 			break;
 		default:
-			free(AcceptedStr);
+			free(RecievedStr);
 			return 0x555;
 		}
 	}
