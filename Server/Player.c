@@ -77,6 +77,7 @@ int NewUser(Player* player, char* username) {
 // set the number choosen by the player
 int PlayerSetup(Player* player, char* num_str) {
 	player->chosen_num = atoi(num_str);
+	player->lost = FALSE; // we reset this flag for a new game
 	printf("user chose a number and it was set\n");
 	// return message to client
 	if (SendString(SERVER_APPROVED, player->player_socket) == TRNS_FAILED)
@@ -89,6 +90,7 @@ int PlayerSetup(Player* player, char* num_str) {
 		printf("Socket error when trying to send data\n");
 		return STATUS_CODE_FAILURE;
 	}
+	printf("move request sent\n");
 	return STATUS_CODE_SUCCESS;
 }
 
@@ -191,6 +193,7 @@ int SendResults(Player* player, Player* other_player) {
 			printf("Socket error when trying to send data\n");
 			return STATUS_CODE_FAILURE;
 		}
+		printf("move request sent\n");
 	}
 	else if ((player->lost) && (other_player->lost)) {// draw
 		printf("draw\n");
@@ -210,11 +213,12 @@ int SendResults(Player* player, Player* other_player) {
 			printf("Socket error when trying to send data\n");
 			return STATUS_CODE_FAILURE;
 		}
+	}
+	if (main_menu) {// game is over, send main menu and reset the game
+		printf("returning to main menu\n");
 		if (!IsFileExist(GAME_SESSION_FILE_NAME))
 			RemoveGameSessionFile();
-	}
-	if (main_menu) {
-		if (SendString(SERVER_PLAYER_MOVE_REQUEST, player->player_socket) == TRNS_FAILED) {
+		if (SendString(SERVER_MAIN_MENU, player->player_socket) == TRNS_FAILED) {
 			printf("Socket error when trying to send data\n");
 			return STATUS_CODE_FAILURE;
 		}
@@ -353,29 +357,30 @@ int PlayVersus(Player* player, Player* other_player, BOOL* create_game_session) 
 		printf("Couldn't set player game type event - %d\n", GetLastError());
 		return STATUS_CODE_FAILURE;
 	}
-	int timeout_counter = 0;// here we wait for 2 min for another player to connect to the server
-	while (other_player->versus_chose == NULL) {//we are using active wait because the other client can't signal anything if it is not created
-		if (timeout_counter == 120); {
-			printf("No one to playe with...\n");
-			break;
+	if (other_player->valid == 0) {//no oponent to play with
+		if (SendString(SERVER_NO_OPPONENTS, player->player_socket) == TRNS_FAILED) {
+			printf("Socket error trying to send data\n");
+			return STATUS_CODE_FAILURE;
 		}
-		timeout_counter++;
-		Sleep(1);
+		if (SendString(SERVER_MAIN_MENU, player->player_socket) == TRNS_FAILED) {
+			printf("Socket error trying to send data\n");
+			return STATUS_CODE_FAILURE;
+		}
+		return STATUS_CODE_SUCCESS;
 	}
 	// wait for other client to choose to play
-	wait_res = WaitForSingleObject(other_player->versus_chose, 90000);
+	if(other_player->versus_chose != NULL)
+		wait_res = WaitForSingleObject(other_player->versus_chose, 15000);
 	if ((WAIT_OBJECT_0 != wait_res) && (WAIT_TIMEOUT != wait_res)) {
 		printf("Couldn't get other player's choice - %d\n", GetLastError());
 		return STATUS_CODE_FAILURE;
 	}
-	if (WAIT_TIMEOUT == wait_res) { // the other player won't play
-		if (SendString(SERVER_NO_OPPONENTS, player->player_socket) == TRNS_FAILED)
-		{
+	if (WAIT_TIMEOUT == wait_res || other_player->valid == 0) { // the other player won't play
+		if (SendString(SERVER_NO_OPPONENTS, player->player_socket) == TRNS_FAILED){
 			printf("Socket error trying to send data\n");
 			return STATUS_CODE_FAILURE;
 		}
-		if (SendString(SERVER_MAIN_MENU, player->player_socket) == TRNS_FAILED)
-		{
+		if (SendString(SERVER_MAIN_MENU, player->player_socket) == TRNS_FAILED){
 			printf("Socket error trying to send data\n");
 			return STATUS_CODE_FAILURE;
 		}
